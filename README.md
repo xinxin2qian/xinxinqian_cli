@@ -268,27 +268,75 @@ const { template } = await inquirer.prompt({
 });
 console.log("模版地址：", template);
 ```
-## 实现下载模板
-- 拿到用户选择的模板地址后，就要根据用户输入的项目名称，把指定的项目模板下载到对应项目文件夹中，实现下载git项目模板的功能需要下载`download-git-repo`依赖，通过指令`npm i download-git-repo -S`进行安装。
-- `download-git-repo`的语法
-```js
-const downloadGitRepo = require('download-git-repo')
 
-downloadGitRepo('项目git地址', '目标文件夹', function(err) {
+## 实现下载模板
+
+- 拿到用户选择的模板地址后，就要根据用户输入的项目名称，把指定的项目模板下载到对应项目文件夹中，实现下载 git 项目模板的功能需要下载`download-git-repo`依赖，通过指令`npm i download-git-repo -S`进行安装。
+- `download-git-repo`的语法
+
+```js
+const downloadGitRepo = require("download-git-repo");
+
+downloadGitRepo("项目git地址", "目标文件夹", function (err) {
   if (err) {
-    console.log('下载失败', err)
+    console.log("下载失败", err);
   } else {
-    console.log('下载成功')
+    console.log("下载成功");
   }
-})
+});
 // 项目git地址：在选择完模板时可以获取到。
 // 目标文件夹：应该是用户执行命令行所在位置下的项目名称文件夹。
-const path = require('path')
+const path = require("path");
 // 目标文件夹 = 用户命令行所在目录 + 项目名称
-const dest = path.join(process.cwd(), name)
-``` 
-> 默认会拉取master分支的代码，如果想从其他分支拉取代码，可以在git地址后面添加#branch选择分支。如，指定feature分支：`https://github.com:xinxin2qian/xinxin-plus#feature `
+const dest = path.join(process.cwd(), name);
+```
 
-## 优化cli脚手架
+> 默认会拉取 master 分支的代码，如果想从其他分支拉取代码，可以在 git 地址后面添加#branch 选择分支。如，指定 feature 分支：`https://github.com:xinxin2qian/xinxin-plus#feature `
+
+## 优化 cli 脚手架
+
 - 由于从`github`下载的模板，有时候网络不好，下载时间会久一些，使用`loading动画`来提升用户体验，使用`ora`来实现，这是一个命令行的`loading动画库`
-- 使用指令`npm i ora@5.4.1 -S`进行安装，因为安装新的版本需要用import引入，由于node环境，也没有引入babel这些，就直接使用5.x的版本，可以直接require引入。
+- 使用指令`npm i ora@5.4.1 -S`进行安装，因为安装新的版本需要用 import 引入，由于 node 环境，也没有引入 babel 这些，就直接使用 5.x 的版本，可以直接 require 引入。
+
+```js
+// 引入ora，loading动画库
+const ora = require("ora");
+// 定义loading
+const loading = ora("正在下载模板...");
+// ...
+// 开始loading
+loading.start();
+// 开始下载模板
+downloadGitRepo(templateUrl, targetAir, (error) => {
+  if (error) {
+    loading.fail("create template error" + error.message);
+  } else {
+    loading.succeed("create template success");
+  }
+});
+// ...
+```
+
+## 支持从命令行传参数
+
+- 可以通过命令行参数形式直接传入项目名称和模板名称
+
+```js
+// ...
+// 如果通过命令行传入模板名称
+let templateItem = templates.find(
+  (template) => template.name === options.template
+);
+let templateUrl = templateItem ? templateItem.value : "";
+if (!templateUrl) {
+  const { template } = await inquirer.prompt({
+    type: "list",
+    name: "template",
+    message: "请选择模版：",
+    choices: templates, // 模版列表
+  });
+  console.log("模版地址：", template);
+  templateUrl = template;
+}
+// ...
+```

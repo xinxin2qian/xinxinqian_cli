@@ -16,6 +16,7 @@ program
   .description("create a new project")
   // -f or --force 为强制创建，如果创建的目录存在，则直接覆盖
   .option("-f, --force", "overwrite target directory if it exits")
+  .option("-t, --template <template>", "template name")
   .action((name, options) => {
     // 打印结果，输出用户手动输入的项目名字
     // console.log("name", name)
