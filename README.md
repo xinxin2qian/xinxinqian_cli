@@ -288,3 +288,7 @@ const path = require('path')
 const dest = path.join(process.cwd(), name)
 ``` 
 > 默认会拉取master分支的代码，如果想从其他分支拉取代码，可以在git地址后面添加#branch选择分支。如，指定feature分支：`https://github.com:xinxin2qian/xinxin-plus#feature `
+
+## 优化cli脚手架
+- 由于从`github`下载的模板，有时候网络不好，下载时间会久一些，使用`loading动画`来提升用户体验，使用`ora`来实现，这是一个命令行的`loading动画库`
+- 使用指令`npm i ora@5.4.1 -S`进行安装，因为安装新的版本需要用import引入，由于node环境，也没有引入babel这些，就直接使用5.x的版本，可以直接require引入。

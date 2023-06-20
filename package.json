@@ -20,6 +20,7 @@
     "download-git-repo": "^3.0.2",
     "figlet": "^1.5.2",
     "fs-extra": "^11.1.0",
-    "inquirer": "^8.2.4"
+    "inquirer": "^8.2.4",
+    "ora": "^5.4.1"
   }
 }
