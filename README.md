@@ -342,9 +342,78 @@ if (!templateUrl) {
 ```
 
 ## 覆盖文件夹操作（补充）
+
 - 当前用户输入的目录所在位置已经有`同名的文件夹`时，应该提示用户是否覆盖，如果选了覆盖，则把原文件删除，如果选择不覆盖，就停止所有操作，退出命令行。
 - 通过`existsSync`方法判断目标文件夹是否存在，需要下载`fs-extra`依赖包
 - 如果存在，使用`inquirer`模块的`confirm`类型交互来让用户选择是否覆盖。
 
 ## 添加模板后，引导操作
+
 - 类似`vite`、`vue-cli`等脚手架在从创建完项目后，都会有一个引导提示，比如，`cd xxx`进入文件夹，`npm i`安装依赖包等等
+
+## 用接口获取动态模板
+
+- 如果新增或者删除模板，就需要修改`cli脚手架`代码，那么项目中的`templates.js`文件也要跟着修改，所以，换成接口请求的方式，增加灵活度，像`github`、`gitlab`等代码仓库网站，都有提供获取仓库信息等`api`，比如，`github`的[api.github.com](https://api.github.com/)返回很多接口。 => 倒数第二个是一个获取用户仓库列表信息的接口，其中`{user}`是用户名称参数，可以通过这个接口查询到对应`github`用户下所有公开的`git`仓库信息。如：[自己的仓库信息](https://api.github.com/users/xinxin2qian/repos)
+- 在文件夹`lib`下，新建`api.js`文件，并在终端通过指令`npm i axios -S`安装依赖
+- 向`api.js`写入内容：
+
+```js
+const axios = require("axios");
+const getGitReposList = (username) => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`https://api.github.com/users/${username}/repos`)
+      .then(function (response) {
+        if (response.status === 200) {
+          const list = response.data.map((item) => ({
+            name: item.name,
+            value: `https://github.com:${username}/${item.name}`,
+          }));
+          resolve(list);
+        } else {
+          reject(response.status);
+        }
+      })
+      .catch(function (error) {
+        reject(error);
+      });
+  });
+};
+module.exports = {
+  getGitReposList,
+};
+```
+
+- 修改`create.js`文件的代码：
+
+```js
+// ...
+console.log("create success");
+const getRepoLoading = ora("get templates...");
+getRepoLoading.start();
+const templates = await getGitReposList("xinxin2qian");
+getRepoLoading.succeed("get templates success!");
+// 如果通过命令行传入模板名称
+let templateItem = templates.find(
+  (template) => template.name === options.template
+);
+// ...
+```
+
+
+## cli脚手架使用
+### 本地测试
+> 在cmd里，输入指令`xin-cli -V`看看本地是否有安装xin-cli，没有就执行下面指令进行安装
+### 安装
+```sh
+$ npm install -g xin-cli
+# or yarn
+$ yarn global add xin-cli
+```
+### 使用
+```sh
+# 创建模版
+$ xin-cli create <name> [-t|--template]
+# 示例
+$ xin-cli create my-test -template xinxin-plus
+```
